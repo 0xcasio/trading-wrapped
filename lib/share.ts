@@ -21,16 +21,18 @@ export function encodeShareData(data: ShareData): string {
 
 export function decodeShareData(encoded: string): ShareData | null {
     try {
-        // Try to parse directly first (in case it's already a JSON string)
-        try {
-            return JSON.parse(encoded);
-        } catch {
-            // If that fails, try decoding first
-            const json = decodeURIComponent(encoded);
-            return JSON.parse(json);
-        }
+        // Next.js automatically URL-decodes searchParams, so the 'encoded' string
+        // is actually already a JSON string. Just parse it directly.
+        const parsed = JSON.parse(encoded);
+        return parsed;
     } catch (e) {
-        console.error('Failed to decode share data', e);
-        return null;
+        // If direct parsing fails, try URL decoding first (for backwards compatibility)
+        try {
+            const decoded = decodeURIComponent(encoded);
+            return JSON.parse(decoded);
+        } catch (e2) {
+            console.error('Failed to decode share data', e, e2);
+            return null;
+        }
     }
 }
