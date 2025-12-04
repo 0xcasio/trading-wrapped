@@ -11,13 +11,19 @@ export interface ShareData {
 export function encodeShareData(data: ShareData): string {
     try {
         const json = JSON.stringify(data);
+        console.log('Encoding data:', data);
+        console.log('JSON length:', json.length);
+
         if (typeof window !== 'undefined') {
-            return btoa(json);
+            const encoded = btoa(json);
+            console.log('Encoded length:', encoded.length);
+            return encoded;
         } else {
             return Buffer.from(json).toString('base64');
         }
     } catch (e) {
         console.error('Failed to encode share data', e);
+        console.error('Data that failed:', data);
         return '';
     }
 }
