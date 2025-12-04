@@ -64,7 +64,14 @@ export default function Home() {
               placeholder="0x..."
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleAnalyze();
+                } else if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+                  // Ensure Cmd+A / Ctrl+A always selects all text
+                  e.currentTarget.select();
+                }
+              }}
             />
             {error && (
               <p className="text-neo-error font-bold text-sm animate-pulse">
