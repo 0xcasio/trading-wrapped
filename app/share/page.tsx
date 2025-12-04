@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { decodeShareData } from '@/lib/share';
-import { StoryContainer } from '@/components/StoryContainer';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
@@ -24,8 +23,14 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     if (!data) return {};
 
     const { stats, personality } = data;
-    const title = `My Trading Wrapped: ${personality.emoji} ${personality.name}`;
-    const description = `I made ${stats.totalTrades} trades with a ${Math.round(stats.winRate)}% win rate. PnL: $${Math.round(stats.totalPnL)}.`;
+    const title = 'My Hyperliquid Trading Wrapped 🎁';
+    const description = `${stats.totalTrades} trades • ${Math.round(stats.winRate)}% win rate • $${Math.round(stats.totalPnL)} P&L • ${personality.emoji} ${personality.name}`;
+
+    // IMPORTANT: Use absolute URL for OG image
+    const baseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'https://trading-wrapped.vercel.app';
+    const imageUrl = `${baseUrl}/api/og?stats=${encodeURIComponent(statsParam)}`;
 
     return {
         title,
@@ -33,13 +38,14 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
         openGraph: {
             title,
             description,
-            images: [`/api/og?stats=${statsParam}`],
+            images: [imageUrl],
+            type: 'website',
         },
         twitter: {
             card: 'summary_large_image',
             title,
             description,
-            images: [`/api/og?stats=${statsParam}`],
+            images: [imageUrl],
         },
     };
 }
@@ -60,41 +66,24 @@ export default function SharePage({ searchParams }: Props) {
         );
     }
 
-    // We reuse the StoryContainer but maybe force it to the summary slide?
-    // Or just render a static summary view.
-    // For simplicity, let's render a static summary view similar to the slide.
-
     const { stats, personality } = data;
+    const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
+        : 'https://trading-wrapped.vercel.app';
+    const imageUrl = `${baseUrl}/api/og?stats=${encodeURIComponent(statsParam)}`;
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-neo-bg p-4">
-            <div className="w-full max-w-md space-y-6">
-                <h1 className="text-4xl font-black uppercase text-center">Trading Wrapped</h1>
+            <div className="w-full max-w-2xl space-y-6">
+                <h1 className="text-4xl font-black uppercase text-center">My Hyperliquid Trading Wrapped 🎁</h1>
 
-                <div className="grid grid-cols-2 gap-4 w-full bg-white p-4 border-4 border-black brutal-shadow">
-                    <div className="col-span-2 text-center border-b-4 border-black pb-4 mb-2">
-                        <div className="text-sm font-bold uppercase text-gray-500">Total P&L</div>
-                        <div className={`text-5xl font-black ${stats.totalPnL >= 0 ? 'text-neo-success' : 'text-neo-error'}`}>
-                            ${stats.totalPnL.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                        </div>
-                    </div>
-
-                    <div className="text-center p-2 border-2 border-black">
-                        <div className="text-xs font-bold uppercase text-gray-500">Trades</div>
-                        <div className="text-2xl font-black">{stats.totalTrades}</div>
-                    </div>
-                    <div className="text-center p-2 border-2 border-black">
-                        <div className="text-xs font-bold uppercase text-gray-500">Win Rate</div>
-                        <div className="text-2xl font-black">{Math.round(stats.winRate)}%</div>
-                    </div>
-
-                    <div className="col-span-2 flex items-center justify-center gap-4 p-4 bg-neo-bg border-2 border-black">
-                        <div className="text-4xl">{personality.emoji}</div>
-                        <div>
-                            <div className="text-xs font-bold uppercase text-gray-500">Personality</div>
-                            <div className="text-xl font-black">{personality.name}</div>
-                        </div>
-                    </div>
+                {/* OG Image Preview */}
+                <div className="w-full bg-white border-4 border-black brutal-shadow">
+                    <img
+                        src={imageUrl}
+                        alt="Trading Wrapped Summary"
+                        className="w-full h-auto"
+                    />
                 </div>
 
                 <Link href="/" className="block w-full">
