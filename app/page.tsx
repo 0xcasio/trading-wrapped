@@ -1,65 +1,97 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState } from 'react';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { fetchUserFills } from '@/lib/api';
+import { analyzeTrades, AnalyticsResult } from '@/lib/analytics';
+import { StoryContainer } from '@/components/StoryContainer';
+import { Loader2 } from 'lucide-react';
 
 export default function Home() {
+  const [address, setAddress] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [data, setData] = useState<AnalyticsResult | null>(null);
+
+  const handleAnalyze = async () => {
+    if (!address.startsWith('0x') || address.length !== 42) {
+      setError('Please enter a valid Ethereum address (0x...)');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const trades = await fetchUserFills(address);
+      if (trades.length === 0) {
+        setError('No trades found for this address on Hyperliquid.');
+        setLoading(false);
+        return;
+      }
+
+      const analytics = analyzeTrades(trades);
+      setData(analytics);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to fetch data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (data) {
+    return <StoryContainer data={data} onRestart={() => setData(null)} />;
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-neo-bg">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center space-y-4">
+          <h1 className="text-5xl md:text-6xl font-black uppercase text-neo-black drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+            Trading Wrapped
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-xl font-bold text-neo-black/80">
+            Hyperliquid Edition
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        <div className="brutal-card p-8 space-y-6">
+          <div className="space-y-2">
+            <label className="text-lg font-bold uppercase">Wallet Address</label>
+            <Input
+              placeholder="0x..."
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {error && (
+              <p className="text-neo-error font-bold text-sm animate-pulse">
+                {error}
+              </p>
+            )}
+          </div>
+
+          <Button
+            className="w-full text-xl py-4"
+            onClick={handleAnalyze}
+            disabled={loading}
           >
-            Documentation
-          </a>
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="animate-spin" /> Analyzing...
+              </span>
+            ) : (
+              'ROAST MY TRADES'
+            )}
+          </Button>
         </div>
-      </main>
-    </div>
+
+        <div className="text-center text-sm font-bold opacity-50">
+          Built by <a href="https://twitter.com/0xCasio" target="_blank" rel="noopener noreferrer">0xCasio</a>
+        </div>
+      </div>
+    </main>
   );
 }
