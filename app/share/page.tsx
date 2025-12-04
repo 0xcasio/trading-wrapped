@@ -1,4 +1,3 @@
-```typescript
 import { Metadata } from 'next';
 import { decodeShareData } from '@/lib/share';
 import Link from 'next/link';
@@ -27,30 +26,30 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 
     const { stats, personality } = data;
     const title = 'My Hyperliquid Trading Wrapped 🎁';
-    const description = `${ stats.totalTrades } trades • ${ Math.round(stats.winRate) }% win rate • $${ Math.round(stats.totalPnL) } P & L • ${ personality.emoji } ${ personality.name } `;
+    const description = `${stats.totalTrades} trades • ${Math.round(stats.winRate)}% win rate • $${Math.round(stats.totalPnL)} P & L • ${personality.emoji} ${personality.name} `;
 
     // IMPORTANT: Use absolute URL for OG image
     const baseUrl = process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : 'https://trading-wrapped.vercel.app';
-const imageUrl = `${baseUrl}/api/og?stats=${encodeURIComponent(statsParam)}`;
+    const imageUrl = `${baseUrl}/api/og?stats=${encodeURIComponent(statsParam)}`;
 
-return {
-    title,
-    description,
-    openGraph: {
+    return {
         title,
         description,
-        images: [imageUrl],
-        type: 'website',
-    },
-    twitter: {
-        card: 'summary_large_image',
-        title,
-        description,
-        images: [imageUrl],
-    },
-};
+        openGraph: {
+            title,
+            description,
+            images: [imageUrl],
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: [imageUrl],
+        },
+    };
 }
 
 export default function SharePage({ searchParams }: Props) {
