@@ -1,16 +1,19 @@
+```typescript
 import { Metadata } from 'next';
 import { decodeShareData } from '@/lib/share';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import { use } from 'react';
 
 export const dynamic = 'force-dynamic';
 
 type Props = {
-    searchParams: { [key: string]: string | string[] | undefined };
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-    const statsParam = searchParams.stats as string;
+    const params = await searchParams;
+    const statsParam = params.stats as string;
 
     if (!statsParam) {
         return {
@@ -24,34 +27,37 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 
     const { stats, personality } = data;
     const title = 'My Hyperliquid Trading Wrapped 🎁';
-    const description = `${stats.totalTrades} trades • ${Math.round(stats.winRate)}% win rate • $${Math.round(stats.totalPnL)} P&L • ${personality.emoji} ${personality.name}`;
+    const description = `${ stats.totalTrades } trades • ${ Math.round(stats.winRate) }% win rate • $${ Math.round(stats.totalPnL) } P & L • ${ personality.emoji } ${ personality.name } `;
 
     // IMPORTANT: Use absolute URL for OG image
     const baseUrl = process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : 'https://trading-wrapped.vercel.app';
-    const imageUrl = `${baseUrl}/api/og?stats=${encodeURIComponent(statsParam)}`;
+const imageUrl = `${baseUrl}/api/og?stats=${encodeURIComponent(statsParam)}`;
 
-    return {
+return {
+    title,
+    description,
+    openGraph: {
         title,
         description,
-        openGraph: {
-            title,
-            description,
-            images: [imageUrl],
-            type: 'website',
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title,
-            description,
-            images: [imageUrl],
-        },
-    };
+        images: [imageUrl],
+        type: 'website',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [imageUrl],
+    },
+};
 }
 
 export default function SharePage({ searchParams }: Props) {
-    const statsParam = searchParams.stats as string;
+    // In Next.js 16, searchParams is a Promise - unwrap it with use()
+    const params = use(searchParams);
+    const statsParam = params.stats as string;
+
     const data = decodeShareData(statsParam);
 
     if (!data) {
