@@ -21,9 +21,14 @@ export function encodeShareData(data: ShareData): string {
 
 export function decodeShareData(encoded: string): ShareData | null {
     try {
-        // Decode the URI component
-        const json = decodeURIComponent(encoded);
-        return JSON.parse(json);
+        // Try to parse directly first (in case it's already a JSON string)
+        try {
+            return JSON.parse(encoded);
+        } catch {
+            // If that fails, try decoding first
+            const json = decodeURIComponent(encoded);
+            return JSON.parse(json);
+        }
     } catch (e) {
         console.error('Failed to decode share data', e);
         return null;
