@@ -12,6 +12,8 @@ export interface AnalyticsResult {
     cursedCoin: { coin: string; pnl: number } | null;
     luckyCoin: { coin: string; pnl: number } | null;
     worstHour: { hour: number; pnl: number } | null;
+    bestMonth: { month: string; pnl: number } | null;
+    worstMonth: { month: string; pnl: number } | null;
     averageTradeDuration: number; // in milliseconds
     tradesPerDay: number;
     lateNightTradePercent: number;
@@ -36,6 +38,8 @@ export function analyzeTrades(trades: Trade[]): AnalyticsResult {
             cursedCoin: null,
             luckyCoin: null,
             worstHour: null,
+            bestMonth: null,
+            worstMonth: null,
             averageTradeDuration: 0,
             tradesPerDay: 0,
             lateNightTradePercent: 0,
@@ -64,6 +68,9 @@ export function analyzeTrades(trades: Trade[]): AnalyticsResult {
     const lastTradeTime = sortedTrades[sortedTrades.length - 1].time;
     const tradingDays = Math.max(1, (lastTradeTime - firstTradeTime) / (1000 * 60 * 60 * 24));
 
+    // Monthly PnL
+    const monthPnL: Record<string, number> = {};
+
     for (let i = 0; i < sortedTrades.length; i++) {
         const trade = sortedTrades[i];
         const pnl = parseFloat(trade.closedPnl);
@@ -89,11 +96,14 @@ export function analyzeTrades(trades: Trade[]): AnalyticsResult {
         // Coin PnL
         coinPnL[trade.coin] = (coinPnL[trade.coin] || 0) + pnl;
 
-        // Hour PnL (Local time is tricky on server, but we can use UTC or try to infer. 
-        // Ideally we pass user timezone, but for now let's assume UTC or just use the date object)
+        // Hour PnL
         const date = new Date(trade.time);
         const hour = date.getHours();
         hourPnL[hour] = (hourPnL[hour] || 0) + pnl;
+
+        // Monthly PnL (Format: "YYYY-MM")
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        monthPnL[monthKey] = (monthPnL[monthKey] || 0) + pnl;
 
         // Late Night (00:00 - 05:00)
         if (hour >= 0 && hour < 5) {
@@ -134,6 +144,23 @@ export function analyzeTrades(trades: Trade[]): AnalyticsResult {
         }
     }
 
+    // Best & Worst Month
+    let bestMonth = null;
+    let worstMonth = null;
+    let minMonthPnL = Infinity;
+    let maxMonthPnL = -Infinity;
+
+    for (const [month, pnl] of Object.entries(monthPnL)) {
+        if (pnl > maxMonthPnL) {
+            maxMonthPnL = pnl;
+            bestMonth = { month, pnl };
+        }
+        if (pnl < minMonthPnL) {
+            minMonthPnL = pnl;
+            worstMonth = { month, pnl };
+        }
+    }
+
     // Worst Hour
     let worstHour = null;
     let minHourPnL = Infinity;
@@ -165,6 +192,8 @@ export function analyzeTrades(trades: Trade[]): AnalyticsResult {
         cursedCoin,
         luckyCoin,
         worstHour,
+        bestMonth,
+        worstMonth,
         averageTradeDuration: 0, // Not easily calculable from just fills without open/close pairing logic, skipping for now
         tradesPerDay: trades.length / tradingDays,
         lateNightTradePercent: lateNightPercent,

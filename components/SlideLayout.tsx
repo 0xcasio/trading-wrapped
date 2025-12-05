@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 
 interface SlideLayoutProps {
     children: React.ReactNode;
@@ -97,11 +97,9 @@ export const SlideLayout: React.FC<SlideLayoutProps> = ({
                 <button
                     onClick={(e) => { e.stopPropagation(); onShare(); }}
                     className="absolute top-4 right-4 z-50 p-3 bg-black text-white brutal-border brutal-shadow rounded-full hover:scale-110 transition-transform"
-                    aria-label="Share on X"
+                    aria-label="Download or Share Slide"
                 >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                    </svg>
+                    <Download className="w-5 h-5" />
                 </button>
             )}
 

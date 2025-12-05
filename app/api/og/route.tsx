@@ -204,6 +204,37 @@ export async function GET(request: Request) {
                 );
                 break;
 
+            case 'monthly':
+                content = (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 40 }}>
+                        <div style={{ display: 'flex', fontSize: 50, fontWeight: 900, textTransform: 'uppercase' }}>Monthly Stats</div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 40, width: 800 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#FFF', padding: '30px', border: '6px solid #000', boxShadow: '10px 10px 0px #000', transform: 'rotate(1deg)' }}>
+                                <div style={{ display: 'flex', fontSize: 30, fontWeight: 700, color: '#666', textTransform: 'uppercase' }}>Best Month</div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', fontSize: 60, fontWeight: 900 }}>{stats.bestMonth ? stats.bestMonth.month : 'N/A'}</div>
+                                    <div style={{ display: 'flex', fontSize: 60, fontWeight: 900, color: '#4ADE80' }}>
+                                        +${stats.bestMonth?.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '0'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#FFF', padding: '30px', border: '6px solid #000', boxShadow: '10px 10px 0px #000', transform: 'rotate(-1deg)' }}>
+                                <div style={{ display: 'flex', fontSize: 30, fontWeight: 700, color: '#666', textTransform: 'uppercase' }}>Worst Month</div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', fontSize: 60, fontWeight: 900 }}>{stats.worstMonth ? stats.worstMonth.month : 'N/A'}</div>
+                                    <div style={{ display: 'flex', fontSize: 60, fontWeight: 900, color: '#EF4444' }}>
+                                        ${stats.worstMonth?.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '0'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', fontSize: 32, fontWeight: 700 }}>"Consistency is key... right?"</div>
+                    </div>
+                );
+                break;
+
             case 'personality':
                 content = (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 40 }}>

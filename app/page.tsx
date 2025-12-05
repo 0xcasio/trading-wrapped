@@ -42,7 +42,7 @@ export default function Home() {
   };
 
   if (data) {
-    return <StoryContainer data={data} onRestart={() => setData(null)} />;
+    return <StoryContainer data={data} onRestart={() => { setData(null); setAddress(''); }} />;
   }
 
   return (

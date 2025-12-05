@@ -5,7 +5,7 @@ export interface ShareData {
     stats: AnalyticsResult;
     personality?: Personality;
     slideIndex?: number;
-    slideType?: 'trades' | 'pnl' | 'biggestWin' | 'biggestLoss' | 'degen' | 'revenge' | 'fees' | 'cursed' | 'worstHour' | 'personality' | 'summary';
+    slideType?: 'trades' | 'pnl' | 'biggestWin' | 'biggestLoss' | 'degen' | 'revenge' | 'fees' | 'cursed' | 'worstHour' | 'monthly' | 'personality' | 'summary';
 }
 
 export function encodeShareData(data: ShareData): string {

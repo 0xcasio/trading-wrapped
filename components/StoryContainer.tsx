@@ -18,7 +18,9 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
     const summaryRef = useRef<HTMLDivElement>(null);
     const personality = assignPersonality(data);
 
-    const TOTAL_SLIDES = 11;
+    const TOTAL_SLIDES = 12;
+
+
 
     const handleNext = () => {
         if (currentIndex < TOTAL_SLIDES - 1) {
@@ -33,14 +35,9 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
     };
 
     const handleShareOnX = () => {
-        // Exclude personality to keep URL short (it's recalculated on the other end)
-        const shareData = encodeShareData({ stats: data });
-        const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-        const shareUrl = `${baseUrl}/share?stats=${shareData}`;
+        const tweetText = `My Hyperliquid Trading Wrapped 🎁\n\n📊 ${data.totalTrades} trades\n🎯 ${Math.round(data.winRate)}% win rate\n💰 $${Math.round(data.totalPnL)} P&L\n${personality.emoji} ${personality.name}\n\n#HyperliquidWrapped\n\nhttps://trading-wrapped.vercel.app/`;
 
-        const tweetText = `My Hyperliquid Trading Wrapped 🎁\n\n📊 ${data.totalTrades} trades\n🎯 ${Math.round(data.winRate)}% win rate\n💰 $${Math.round(data.totalPnL)} P&L\n${personality.emoji} ${personality.name}`;
-
-        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
 
         window.open(twitterUrl, '_blank');
     };
@@ -94,6 +91,9 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
                 case 'worstHour':
                     tweetText = `My worst trading hour: ${data.worstHour ? `${data.worstHour.hour}:00` : 'N/A'} ⏰`;
                     break;
+                case 'monthly':
+                    tweetText = `Best Month: ${data.bestMonth?.month} (+$${Math.round(data.bestMonth?.pnl || 0)}) 📈\nWorst Month: ${data.worstMonth?.month} ($${Math.round(data.worstMonth?.pnl || 0)}) 📉`;
+                    break;
                 case 'personality':
                     tweetText = `My trader personality: ${personality.emoji} ${personality.name}`;
                     break;
@@ -104,23 +104,22 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
             // Add hashtag
             tweetText += `\n\n#HyperliquidWrapped`;
 
-            // Check if native sharing is supported (Mobile)
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            // Check if on mobile device (not just if share API is available)
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                // Mobile: Use native share
                 await navigator.share({
                     files: [file],
                     title: 'My Trading Wrapped',
                     text: tweetText,
                 });
             } else {
-                // Fallback for Desktop: Download image + Open Twitter Intent
+                // Desktop: Direct download
                 const link = document.createElement('a');
                 link.download = 'trading-wrapped.png';
                 link.href = blob;
                 link.click();
-
-                // Open Twitter with pre-filled text (user pastes image)
-                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
-                window.open(twitterUrl, '_blank');
             }
 
         } catch (err) {
@@ -263,7 +262,36 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
                         <p className="text-2xl font-bold">"Maybe just... don't trade at this hour?"</p>
                     </div>
                 );
-            case 9: // Personality
+            case 9: // Monthly Stats
+                return (
+                    <div className="flex flex-col items-center justify-center h-full text-center space-y-8 animate-in fade-in zoom-in duration-500">
+                        <h1 className="text-4xl font-black uppercase">Monthly Stats</h1>
+
+                        <div className="space-y-6 w-full max-w-sm">
+                            <div className="bg-white p-4 border-4 border-black brutal-shadow rotate-1">
+                                <div className="text-sm font-bold uppercase text-gray-500 mb-1">Best Month</div>
+                                <div className="text-3xl font-black text-neo-success">
+                                    {data.bestMonth ? data.bestMonth.month : 'N/A'}
+                                </div>
+                                <div className="text-xl font-bold">
+                                    +${data.bestMonth?.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '0'}
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-4 border-4 border-black brutal-shadow -rotate-1">
+                                <div className="text-sm font-bold uppercase text-gray-500 mb-1">Worst Month</div>
+                                <div className="text-3xl font-black text-neo-error">
+                                    {data.worstMonth ? data.worstMonth.month : 'N/A'}
+                                </div>
+                                <div className="text-xl font-bold">
+                                    ${data.worstMonth?.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '0'}
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-2xl font-bold">"Consistency is key... right?"</p>
+                    </div>
+                );
+            case 10: // Personality
                 return (
                     <div className="flex flex-col items-center justify-center h-full text-center space-y-6 animate-in fade-in zoom-in duration-500">
                         <h1 className="text-3xl font-black uppercase mb-4">You are...</h1>
@@ -276,7 +304,7 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
                         </p>
                     </div>
                 );
-            case 10: // Summary
+            case 11: // Summary
                 return (
                     <div className="flex flex-col items-center justify-center h-full w-full max-w-md mx-auto space-y-6 animate-in fade-in zoom-in duration-500">
                         <h1 className="text-4xl font-black uppercase">Wrapped {new Date().getFullYear()}</h1>
@@ -318,18 +346,6 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
                                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                                 </svg>
                                 SHARE ON X
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    navigator.clipboard.writeText(
-                                        `My Hyperliquid Trading Wrapped 🎁\n\n📊 ${data.totalTrades} trades\n🎯 ${Math.round(data.winRate)}% win rate\n💰 $${Math.round(data.totalPnL)} P&L\n${personality.emoji} Personality: ${personality.name}\n\nGet yours at [URL]`
-                                    );
-                                    alert('Copied to clipboard!');
-                                }}
-                                className="w-full py-3 bg-neo-main text-black font-black text-lg border-4 border-black brutal-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
-                            >
-                                COPY TEXT
                             </button>
                         </div>
 
