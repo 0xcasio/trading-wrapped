@@ -3,6 +3,7 @@ import { decodeShareData } from '@/lib/share';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { use } from 'react';
+import { assignPersonality } from '@/lib/personalities';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,11 +23,13 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     }
 
     const data = decodeShareData(statsParam);
-    if (!data) return {};
+    if (!data || !data.stats) return {};
 
-    const { stats, personality } = data;
+    const stats = data.stats;
+    const personality = data.personality || assignPersonality(stats);
+
     const title = 'My Hyperliquid Trading Wrapped 🎁';
-    const description = `${stats.totalTrades} trades • ${Math.round(stats.winRate)}% win rate • $${Math.round(stats.totalPnL)} P & L • ${personality.emoji} ${personality.name} `;
+    const description = `${stats.totalTrades} trades • ${Math.round(stats.winRate)}% win rate • $${Math.round(stats.totalPnL)} P&L • ${personality.emoji} ${personality.name}`;
 
     // IMPORTANT: Use absolute URL for OG image
     const baseUrl = process.env.VERCEL_URL
@@ -59,7 +62,7 @@ export default function SharePage({ searchParams }: Props) {
 
     const data = decodeShareData(statsParam);
 
-    if (!data) {
+    if (!data || !data.stats) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-neo-bg p-4 text-center">
                 <h1 className="text-4xl font-black mb-4">Invalid Link</h1>
@@ -71,7 +74,9 @@ export default function SharePage({ searchParams }: Props) {
         );
     }
 
-    const { stats, personality } = data;
+    const stats = data.stats;
+    const personality = data.personality || assignPersonality(stats);
+
     const baseUrl = typeof window !== 'undefined'
         ? window.location.origin
         : 'https://trading-wrapped.vercel.app';
