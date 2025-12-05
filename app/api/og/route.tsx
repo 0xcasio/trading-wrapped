@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { decodeShareData } from '@/lib/share';
+import { assignPersonality } from '@/lib/personalities';
 
 export const runtime = 'edge';
 
