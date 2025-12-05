@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { decodeShareData } from '@/lib/share';
+import { decodeShareData, encodeShareData } from '@/lib/share';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { use } from 'react';
@@ -31,11 +31,21 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const title = 'My Hyperliquid Trading Wrapped 🎁';
     const description = `${stats.totalTrades} trades • ${Math.round(stats.winRate)}% win rate • $${Math.round(stats.totalPnL)} P&L • ${personality.emoji} ${personality.name}`;
 
+    // Re-encode stats for the image URL to keep it as short as possible
+    // We exclude personality since the API can recalculate it
+    const imageStats = {
+        stats: data.stats,
+        slideType: data.slideType,
+        slideIndex: data.slideIndex
+    };
+    const imageParam = encodeShareData(imageStats);
+
     // IMPORTANT: Use absolute URL for OG image
     const baseUrl = process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : 'https://trading-wrapped.vercel.app';
-    const imageUrl = `${baseUrl}/api/og?stats=${encodeURIComponent(statsParam)}`;
+    const imageUrl = `${baseUrl}/api/og?stats=${imageParam}`;
+    const shareUrl = `${baseUrl}/share?stats=${statsParam}`;
 
     return {
         title,
@@ -43,6 +53,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
         openGraph: {
             title,
             description,
+            url: shareUrl,
             images: [imageUrl],
             type: 'website',
         },
@@ -77,10 +88,20 @@ export default function SharePage({ searchParams }: Props) {
     const stats = data.stats;
     const personality = data.personality || assignPersonality(stats);
 
+    // Re-encode for image URL to ensure it's minimal
+    const imageStats = {
+        stats: data.stats,
+        slideType: data.slideType,
+        slideIndex: data.slideIndex
+    };
+    // We can use encodeURIComponent(JSON.stringify(imageStats)) directly or import encodeShareData
+    // Since encodeShareData is not imported in the component part (it is in the file though), let's use the helper
+    const imageParam = encodeShareData(imageStats);
+
     const baseUrl = typeof window !== 'undefined'
         ? window.location.origin
         : 'https://trading-wrapped.vercel.app';
-    const imageUrl = `${baseUrl}/api/og?stats=${encodeURIComponent(statsParam)}`;
+    const imageUrl = `${baseUrl}/api/og?stats=${imageParam}`;
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-neo-bg p-4">

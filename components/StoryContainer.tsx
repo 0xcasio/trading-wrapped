@@ -33,7 +33,8 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
     };
 
     const handleShareOnX = () => {
-        const shareData = encodeShareData({ stats: data, personality });
+        // Exclude personality to keep URL short (it's recalculated on the other end)
+        const shareData = encodeShareData({ stats: data });
         const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
         const shareUrl = `${baseUrl}/share?stats=${shareData}`;
 
@@ -45,7 +46,8 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
     };
 
     const handleShareSlide = (slideIndex: number, slideType: string) => {
-        const shareData = encodeShareData({ stats: data, personality, slideIndex, slideType: slideType as any });
+        // Exclude personality to keep URL short
+        const shareData = encodeShareData({ stats: data, slideIndex, slideType: slideType as any });
         const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
         const shareUrl = `${baseUrl}/share?stats=${shareData}`;
 

@@ -3,7 +3,7 @@ import { Personality } from './personalities';
 
 export interface ShareData {
     stats: AnalyticsResult;
-    personality: Personality;
+    personality?: Personality;
     slideIndex?: number;
     slideType?: 'trades' | 'pnl' | 'biggestWin' | 'biggestLoss' | 'degen' | 'revenge' | 'fees' | 'cursed' | 'worstHour' | 'personality' | 'summary';
 }
