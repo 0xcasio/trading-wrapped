@@ -45,51 +45,90 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
         window.open(twitterUrl, '_blank');
     };
 
-    const handleShareSlide = (slideIndex: number, slideType: string) => {
-        // Exclude personality to keep URL short
-        const shareData = encodeShareData({ stats: data, slideIndex, slideType: slideType as any });
-        const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-        const shareUrl = `${baseUrl}/share?stats=${shareData}`;
+    const slideRef = useRef<HTMLDivElement>(null);
 
-        let tweetText = '';
-        switch (slideType) {
-            case 'trades':
-                tweetText = `I made ${data.totalTrades} trades on Hyperliquid! 📊`;
-                break;
-            case 'pnl':
-                tweetText = `My Hyperliquid P&L: $${Math.round(data.totalPnL)} 💰`;
-                break;
-            case 'biggestWin':
-                tweetText = `My biggest win on Hyperliquid: +$${data.biggestWin?.amount.toLocaleString() || '0'} on ${data.biggestWin?.coin || 'N/A'}! 🚀`;
-                break;
-            case 'biggestLoss':
-                tweetText = `My biggest loss on Hyperliquid: $${data.biggestLoss?.amount.toLocaleString() || '0'} on ${data.biggestLoss?.coin || 'N/A'} 😅`;
-                break;
-            case 'degen':
-                tweetText = `My Degen Score: ${Math.round(data.degenScore)}/100 🦍`;
-                break;
-            case 'revenge':
-                tweetText = `My Revenge Trading Index: ${Math.round(data.revengeTradingScore)}% 😤`;
-                break;
-            case 'fees':
-                tweetText = `I paid $${data.totalFees.toLocaleString(undefined, { maximumFractionDigits: 0 })} in fees on Hyperliquid 💸`;
-                break;
-            case 'cursed':
-                tweetText = `My cursed coin: ${data.cursedCoin?.coin || 'None'} ($${data.cursedCoin?.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '0'}) 👻`;
-                break;
-            case 'worstHour':
-                tweetText = `My worst trading hour: ${data.worstHour ? `${data.worstHour.hour}:00` : 'N/A'} ⏰`;
-                break;
-            case 'personality':
-                tweetText = `My trader personality: ${personality.emoji} ${personality.name}`;
-                break;
-            default:
-                tweetText = `Check out my Hyperliquid Trading Wrapped!`;
+    const handleNativeShare = async (slideIndex: number, slideType: string) => {
+        if (!slideRef.current || isGeneratingImage) return;
+
+        try {
+            setIsGeneratingImage(true);
+
+            // Generate image from the slide
+            const blob = await toPng(slideRef.current, {
+                cacheBust: true,
+                pixelRatio: 2, // Higher quality
+                backgroundColor: '#E0E7FF', // bg-neo-bg
+            });
+
+            // Convert data URL to Blob
+            const res = await fetch(blob);
+            const imageBlob = await res.blob();
+            const file = new File([imageBlob], 'trading-wrapped.png', { type: 'image/png' });
+
+            let tweetText = '';
+            switch (slideType) {
+                case 'trades':
+                    tweetText = `I made ${data.totalTrades} trades on Hyperliquid! 📊`;
+                    break;
+                case 'pnl':
+                    tweetText = `My Hyperliquid P&L: $${Math.round(data.totalPnL)} 💰`;
+                    break;
+                case 'biggestWin':
+                    tweetText = `My biggest win on Hyperliquid: +$${data.biggestWin?.amount.toLocaleString() || '0'} on ${data.biggestWin?.coin || 'N/A'}! 🚀`;
+                    break;
+                case 'biggestLoss':
+                    tweetText = `My biggest loss on Hyperliquid: $${data.biggestLoss?.amount.toLocaleString() || '0'} on ${data.biggestLoss?.coin || 'N/A'} 😅`;
+                    break;
+                case 'degen':
+                    tweetText = `My Degen Score: ${Math.round(data.degenScore)}/100 🦍`;
+                    break;
+                case 'revenge':
+                    tweetText = `My Revenge Trading Index: ${Math.round(data.revengeTradingScore)}% 😤`;
+                    break;
+                case 'fees':
+                    tweetText = `I paid $${data.totalFees.toLocaleString(undefined, { maximumFractionDigits: 0 })} in fees on Hyperliquid 💸`;
+                    break;
+                case 'cursed':
+                    tweetText = `My cursed coin: ${data.cursedCoin?.coin || 'None'} ($${data.cursedCoin?.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 }) || '0'}) 👻`;
+                    break;
+                case 'worstHour':
+                    tweetText = `My worst trading hour: ${data.worstHour ? `${data.worstHour.hour}:00` : 'N/A'} ⏰`;
+                    break;
+                case 'personality':
+                    tweetText = `My trader personality: ${personality.emoji} ${personality.name}`;
+                    break;
+                default:
+                    tweetText = `Check out my Hyperliquid Trading Wrapped!`;
+            }
+
+            // Add hashtag
+            tweetText += `\n\n#HyperliquidWrapped`;
+
+            // Check if native sharing is supported (Mobile)
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'My Trading Wrapped',
+                    text: tweetText,
+                });
+            } else {
+                // Fallback for Desktop: Download image + Open Twitter Intent
+                const link = document.createElement('a');
+                link.download = 'trading-wrapped.png';
+                link.href = blob;
+                link.click();
+
+                // Open Twitter with pre-filled text (user pastes image)
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+                window.open(twitterUrl, '_blank');
+            }
+
+        } catch (err) {
+            console.error('Failed to share:', err);
+            alert('Failed to generate image. Please try again.');
+        } finally {
+            setIsGeneratingImage(false);
         }
-
-        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(shareUrl)}`;
-
-        window.open(twitterUrl, '_blank');
     };
 
     const renderSlideContent = () => {
@@ -315,9 +354,11 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
             totalSlides={TOTAL_SLIDES}
             onNext={handleNext}
             onPrev={handlePrev}
-            onShare={() => handleShareSlide(currentIndex, getSlideType(currentIndex))}
+            onShare={() => handleNativeShare(currentIndex, getSlideType(currentIndex))}
         >
-            {renderSlideContent()}
+            <div ref={slideRef} className="w-full h-full bg-neo-bg">
+                {renderSlideContent()}
+            </div>
         </SlideLayout>
     );
 };
