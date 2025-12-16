@@ -33,7 +33,7 @@ const DEGEN_COINS = new Set([
 export function analyzeTrades(
     trades: Trade[],
     ledger: LedgerUpdate[] = [],
-    historicalPrices: { btc: PriceData; eth: PriceData; spy: PriceData } = { btc: {}, eth: {}, spy: {} }
+    historicalPrices: { btc: PriceData; eth: PriceData; sol: PriceData; spy: PriceData } = { btc: {}, eth: {}, sol: {}, spy: {} }
 ): AnalyticsResult {
     // Calculate Total Deposits and First Deposit Date
     let firstDepositDetails = { time: Infinity, date: null as string | null };
@@ -67,6 +67,7 @@ export function analyzeTrades(
     const whatIf: WhatIfScenarios = { // ... existing code 
         btc: calculateWhatIf(ledger, historicalPrices.btc, 'crypto'),
         eth: calculateWhatIf(ledger, historicalPrices.eth, 'crypto'),
+        sol: calculateWhatIf(ledger, historicalPrices.sol, 'crypto'),
         spy: calculateWhatIf(ledger, historicalPrices.spy, 'stock'),
         savings: calculateSavings(ledger)
     };

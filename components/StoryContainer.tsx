@@ -361,7 +361,23 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
                         </div>
                     </div>
                 );
-            case 10: // What If
+            case 10: // Personality (Swapped)
+                return (
+                    <div className={slideClasses}>
+                        <h1 className="text-3xl font-black uppercase mb-4">You are...</h1>
+                        <div className="relative">
+                            <div className="text-9xl animate-bounce">{personality.emoji}</div>
+                        </div>
+
+                        <div className="text-5xl font-black bg-neo-accent text-white px-6 py-3 border-4 border-black brutal-shadow rotate-1 mt-8">
+                            {personality.name}
+                        </div>
+                        <p className="text-xl font-bold max-w-md bg-white p-4 border-2 border-black brutal-shadow-sm mt-4">
+                            {personality.description}
+                        </p>
+                    </div>
+                );
+            case 11: // What If (Swapped)
                 return (
                     <div className={slideClasses}>
                         <h1 className="text-4xl font-black uppercase mb-4">What If...?</h1>
@@ -390,9 +406,37 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
                                         <div className={cn("text-xl font-black", data.whatIf.btc.pnl >= 0 ? "text-neo-success" : "text-neo-error")}>
                                             {data.whatIf.btc.pnl >= 0 ? '+' : ''}${data.whatIf.btc.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                         </div>
-                                        <div className="text-xs font-bold opacity-50">Strategy: HODL</div>
+                                        <div className="text-xs font-bold opacity-50">Strategy: Orange Pilled</div>
                                     </div>
-                                    <div className="font-black text-xl">₿</div>
+                                    <div className="font-black text-xl bg-[#F7931A] text-white w-10 h-10 flex items-center justify-center rounded-full border-2 border-black">₿</div>
+                                </div>
+                            )}
+
+                            {/* ETH */}
+                            {data.whatIf?.eth && (
+                                <div className="bg-white p-4 border-4 border-black brutal-shadow rotate-1 flex justify-between items-center transform transition-transform hover:scale-105">
+                                    <div className="text-left">
+                                        <div className="text-xs font-bold uppercase text-gray-500">Held ETH</div>
+                                        <div className={cn("text-xl font-black", data.whatIf.eth.pnl >= 0 ? "text-neo-success" : "text-neo-error")}>
+                                            {data.whatIf.eth.pnl >= 0 ? '+' : ''}${data.whatIf.eth.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                        </div>
+                                        <div className="text-xs font-bold opacity-50">Strategy: Ultrasound</div>
+                                    </div>
+                                    <div className="font-black text-xl bg-[#627EEA] text-white w-10 h-10 flex items-center justify-center rounded-full border-2 border-black">Ξ</div>
+                                </div>
+                            )}
+
+                            {/* SOL */}
+                            {data.whatIf?.sol && (
+                                <div className="bg-white p-4 border-4 border-black brutal-shadow -rotate-1 flex justify-between items-center transform transition-transform hover:scale-105">
+                                    <div className="text-left">
+                                        <div className="text-xs font-bold uppercase text-gray-500">Held SOL</div>
+                                        <div className={cn("text-xl font-black", data.whatIf.sol.pnl >= 0 ? "text-neo-success" : "text-neo-error")}>
+                                            {data.whatIf.sol.pnl >= 0 ? '+' : ''}${data.whatIf.sol.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                        </div>
+                                        <div className="text-xs font-bold opacity-50">Strategy: Speed</div>
+                                    </div>
+                                    <div className="font-black text-xl bg-[#14F195] text-black w-10 h-10 flex items-center justify-center rounded-full border-2 border-black">S</div>
                                 </div>
                             )}
 
@@ -427,38 +471,15 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
 
                         <p className="text-lg font-bold mt-4">
                             {data.totalPnL > (data.whatIf?.btc.pnl || 0)
-                                ? "You beat the markert! You are the 1%."
+                                ? "You beat the market! You are the 1%."
                                 : "Most people don't beat BTC. Next year, maybe?"}
-                        </p>
-                    </div>
-                );
-            case 11: // Personality
-                return (
-                    <div className={slideClasses}>
-                        <h1 className="text-3xl font-black uppercase mb-4">You are...</h1>
-                        <div className="relative">
-                            <div className="text-9xl animate-bounce">{personality.emoji}</div>
-                            {/* Keep emoji for personality if it's part of the 'character'?
-                                 Plan said "Replace all emojis".
-                                 But personality.emoji is a specific string from the library.
-                                 I'll keep it for now as a "Character" avatar, or map it to an Icon.
-                                 Mapping dynamic personalities to Lucide icons is hard.
-                                 I'll wrap it in a brutal container.
-                             */}
-                        </div>
-
-                        <div className="text-5xl font-black bg-neo-accent text-white px-6 py-3 border-4 border-black brutal-shadow rotate-1 mt-8">
-                            {personality.name}
-                        </div>
-                        <p className="text-xl font-bold max-w-md bg-white p-4 border-2 border-black brutal-shadow-sm mt-4">
-                            {personality.description}
                         </p>
                     </div>
                 );
             case 12: // Summary
                 return (
                     <div className="flex flex-col items-center justify-center h-full w-full max-w-md mx-auto space-y-6 animate-in fade-in zoom-in duration-500 p-4">
-                        <h1 className="text-4xl font-black uppercase">Wrapped 2024</h1>
+                        <h1 className="text-4xl font-black uppercase">Wrapped 2025</h1>
 
                         {/* Capture Area */}
                         <div ref={summaryRef} className="grid grid-cols-2 gap-4 w-full bg-neo-bg p-4 rounded-lg border-2 border-black brutal-shadow">
@@ -520,7 +541,7 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ data, onRestart 
     };
 
     const getSlideType = (index: number) => {
-        const types = ['trades', 'pnl', 'biggestWin', 'biggestLoss', 'degen', 'revenge', 'fees', 'cursed', 'worstHour', 'monthly', 'whatIf', 'personality', 'summary'];
+        const types = ['trades', 'pnl', 'biggestWin', 'biggestLoss', 'degen', 'revenge', 'fees', 'cursed', 'worstHour', 'monthly', 'personality', 'whatIf', 'summary'];
         return types[index] || 'summary';
     };
 

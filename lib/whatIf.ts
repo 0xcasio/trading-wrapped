@@ -12,6 +12,7 @@ export interface WhatIfResult {
 export interface WhatIfScenarios {
     btc: WhatIfResult;
     eth: WhatIfResult;
+    sol: WhatIfResult;
     spy: WhatIfResult;
     savings: WhatIfResult;
 }

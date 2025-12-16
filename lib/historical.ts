@@ -55,26 +55,18 @@ export async function fetchHistoricalPrices(coinId: string, days: number): Promi
 // Actually, let's just leave it as a TODO or use a very rough static dataset for 2024/2025 if available?
 // Better: return empty and handle it in the UI/Logic as "N/A" if we can't get it, 
 // OR implement a basic mock for testing purposes.
+// SPY fetcher - specific since it's a stock.
 export async function fetchSpyPrices(days: number): Promise<PriceData> {
-    // TODO: specific implementation for SPY. 
-    // For now, let's mock it to prove the 'What If' engine works.
-    // Assuming SPY starts around $470 and grows ~10-20% over the year.
-    const prices: PriceData = {};
-    const now = Date.now();
-    const dayMs = 24 * 60 * 60 * 1000;
-
-    let currentPrice = 470;
-
-    for (let i = days; i >= 0; i--) {
-        const timestamp = now - (i * dayMs);
-        const dateStr = formatDate(timestamp);
-
-        // Random daily move between -1% and +1.1% (slight upward bias)
-        const move = (Math.random() * 0.021) - 0.01;
-        currentPrice = currentPrice * (1 + move);
-
-        prices[dateStr] = currentPrice;
+    try {
+        const response = await fetch('/api/prices/spy');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch SPY prices: ${response.statusText}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Failed to fetch SPY prices:', error);
+        // Fallback to empty if API fails, UI should handle missing data
+        return {};
     }
-
-    return prices;
 }

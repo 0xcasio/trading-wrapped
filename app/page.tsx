@@ -25,11 +25,12 @@ export default function Home() {
     setError('');
 
     try {
-      const [trades, ledger, btcPrices, ethPrices, spyPrices] = await Promise.all([
+      const [trades, ledger, btcPrices, ethPrices, solPrices, spyPrices] = await Promise.all([
         fetchUserFills(address),
         fetchUserLedger(address),
         fetchHistoricalPrices('bitcoin', 365),
         fetchHistoricalPrices('ethereum', 365),
+        fetchHistoricalPrices('solana', 365),
         fetchSpyPrices(365)
       ]);
 
@@ -42,6 +43,7 @@ export default function Home() {
       const analytics = analyzeTrades(trades, ledger, {
         btc: btcPrices,
         eth: ethPrices,
+        sol: solPrices,
         spy: spyPrices
       });
       setData(analytics);

@@ -25,7 +25,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ data, per
                     <span className="text-neo-main">Wrapped</span>
                 </h1>
                 <div className="text-4xl font-bold opacity-60 uppercase tracking-widest">
-                    Hyperliquid Edition
+                    Hyperliquid Edition 2025
                 </div>
             </div>
 

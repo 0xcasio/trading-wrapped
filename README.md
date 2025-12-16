@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trading Wrapped (Hyperliquid Edition) 🎁
 
-## Getting Started
+**"Wrapped like format for your on-chain trading decisions."**
 
-First, run the development server:
+### The Problem
+Trading is often reactive and emotional. In the heat of the markets, it's difficult to step back and objectively analyze your performance over the long term. Traders rarely perform the retrospection needed to identify behavioral leaks, "cursed" assets, or missed opportunities, leading to the same mistakes year after year.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### The Solution
+**Trading Wrapped** turns raw data into actionable hindsight. By analyzing your entire year's on-chain history, it helps you understand your true performance against the market (and yourself). It’s a tool for honest reflection—packaged in an engaging story that helps you make better decisions for 2026.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Key Features
+- **The Roast:** An analytical engine that assigns you a "Personality" (e.g., *The Exit Liquidity*, *God Gamer*) based on your win rate and "degen score."
+- **Deep Insights:** Visualizes P&L over time, fees paid, and best/worst trade timestamps using rich charts.
+- **The "What If" Engine:** Compares your active trading performance against passive strategies (HODLing BTC, S&P 500, or a Savings Account).
+- **Viral Sharing:** Generates a custom, high-fidelity 9:16 story card for instant sharing on Twitter, TikTok, and Instagram.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### The Stack
+Built with a focus on speed, aesthetics, and interactivity.
+- **Framework:** Next.js 16 (App Router)
+- **Styling:** Tailwind CSS (Neo-Brutalist Design System)
+- **Data:** Hyperliquid API + CoinGecko (Historical Prices)
+- **Visualization:** Recharts + Framer Motion
+- **Virality:** html-to-image for canvas generation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### How to Run
+1. Clone the repo
+2. `npm install`
+3. `npm run dev`
+4. Enter any Hyperliquid wallet address (e.g., `0x...`) and watch the magic.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Built by [0xCasio](https://twitter.com/0xCasio) as a showcase of product thinking applied to crypto analytics.*
