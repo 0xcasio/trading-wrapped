@@ -42,6 +42,7 @@ for (let i = 0; i <= 10; i++) {
 const historicalPrices = {
     btc: mockPriceData,
     eth: mockPriceData,
+    sol: mockPriceData,
     spy: mockPriceData
 };
 
