@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { fetchUserFills } from '@/lib/api';
+import { fetchUserFills, fetchUserLedger } from '@/lib/api';
+import { fetchHistoricalPrices, fetchSpyPrices } from '@/lib/historical';
 import { analyzeTrades, AnalyticsResult } from '@/lib/analytics';
 import { StoryContainer } from '@/components/StoryContainer';
 import { Loader2 } from 'lucide-react';
@@ -24,14 +25,25 @@ export default function Home() {
     setError('');
 
     try {
-      const trades = await fetchUserFills(address);
+      const [trades, ledger, btcPrices, ethPrices, spyPrices] = await Promise.all([
+        fetchUserFills(address),
+        fetchUserLedger(address),
+        fetchHistoricalPrices('bitcoin', 365),
+        fetchHistoricalPrices('ethereum', 365),
+        fetchSpyPrices(365)
+      ]);
+
       if (trades.length === 0) {
         setError('No trades found for this address on Hyperliquid.');
         setLoading(false);
         return;
       }
 
-      const analytics = analyzeTrades(trades);
+      const analytics = analyzeTrades(trades, ledger, {
+        btc: btcPrices,
+        eth: ethPrices,
+        spy: spyPrices
+      });
       setData(analytics);
     } catch (err) {
       console.error(err);

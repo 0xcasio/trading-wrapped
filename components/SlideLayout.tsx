@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 
@@ -111,15 +110,11 @@ export const SlideLayout: React.FC<SlideLayoutProps> = ({
             </div>
 
             {/* Content */}
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.05 }}
-                transition={{ duration: 0.3 }}
+            <div
                 className={cn('relative z-20 flex-1 flex flex-col p-6 pt-12 pb-24', className)}
             >
                 {children}
-            </motion.div>
+            </div>
 
             {/* Visible Navigation Buttons */}
             <button

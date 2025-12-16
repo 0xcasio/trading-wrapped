@@ -1,4 +1,6 @@
-import { Trade } from './api';
+import { Trade, LedgerUpdate } from './api';
+import { calculateWhatIf, calculateSavings, WhatIfScenarios } from './whatIf';
+import { PriceData } from './historical';
 
 export interface AnalyticsResult {
     totalTrades: number;
@@ -18,13 +20,57 @@ export interface AnalyticsResult {
     tradesPerDay: number;
     lateNightTradePercent: number;
     averagePositionSize: number;
+    totalDeposits: number; // Sum of all incoming transfers/deposits
+    whatIf?: WhatIfScenarios;
+    pnlHistory?: { date: string; value: number }[];
+    firstDepositDate?: string | null;
 }
 
 const DEGEN_COINS = new Set([
     'PEPE', 'DOGE', 'WIF', 'BONK', 'SHIB', 'MEME', 'TRUMP', 'POPCAT', 'MOG', 'HarryPotterObamaSonic10Inu'
 ]);
 
-export function analyzeTrades(trades: Trade[]): AnalyticsResult {
+export function analyzeTrades(
+    trades: Trade[],
+    ledger: LedgerUpdate[] = [],
+    historicalPrices: { btc: PriceData; eth: PriceData; spy: PriceData } = { btc: {}, eth: {}, spy: {} }
+): AnalyticsResult {
+    // Calculate Total Deposits and First Deposit Date
+    let firstDepositDetails = { time: Infinity, date: null as string | null };
+
+    const totalDeposits = ledger.reduce((sum, entry) => {
+        if (entry.delta && typeof entry.delta.usdc === 'string') {
+            const amount = parseFloat(entry.delta.usdc);
+            if (amount > 0) {
+                // Robust time parsing: API usually returns time as number (ms), but handle string just in case.
+                // Also handle potential alternative field names if API changes.
+                let time = entry.time;
+                // @ts-ignore - checking for potential timestamp field
+                if (!time && entry.timestamp) time = entry.timestamp;
+
+                const timeNum = typeof time === 'string' ? parseFloat(time) : time;
+
+                if (timeNum && !isNaN(timeNum) && timeNum < firstDepositDetails.time) {
+                    firstDepositDetails.time = timeNum;
+                    try {
+                        firstDepositDetails.date = new Date(timeNum).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                    } catch (e) {
+                        console.error('Date parsing error', e);
+                    }
+                }
+                return sum + amount;
+            }
+        }
+        return sum;
+    }, 0);
+
+    const whatIf: WhatIfScenarios = { // ... existing code 
+        btc: calculateWhatIf(ledger, historicalPrices.btc, 'crypto'),
+        eth: calculateWhatIf(ledger, historicalPrices.eth, 'crypto'),
+        spy: calculateWhatIf(ledger, historicalPrices.spy, 'stock'),
+        savings: calculateSavings(ledger)
+    };
+
     if (trades.length === 0) {
         return {
             totalTrades: 0,
@@ -44,6 +90,8 @@ export function analyzeTrades(trades: Trade[]): AnalyticsResult {
             tradesPerDay: 0,
             lateNightTradePercent: 0,
             averagePositionSize: 0,
+            totalDeposits: 0,
+            whatIf
         };
     }
 
@@ -180,6 +228,58 @@ export function analyzeTrades(trades: Trade[]): AnalyticsResult {
 
     const revengeScore = (revengeTrades / trades.length) * 100;
 
+    // Calculate daily cumulative PnL for the chart
+    const dailyPnLMap: Record<string, number> = {};
+    const startDate = new Date(firstTradeTime);
+    const endDate = new Date(lastTradeTime);
+
+    // Initialize all days with 0 (optional, or just partial)
+    // Better: Iterate trades and accumulate.
+    let runningPnL = 0;
+    const pnlHistory: { date: string; value: number }[] = [];
+
+    // We need a daily series. 
+    // Simply accumulating trade PnL by time.
+    for (const trade of sortedTrades) {
+        runningPnL += parseFloat(trade.closedPnl);
+        const dateStr = new Date(trade.time).toISOString().split('T')[0];
+        // Keep updating the latest value for the day
+        // If multiple trades in a day, the last one sets the day's close PnL (cumulative)
+        // But we need a list of days.
+    }
+
+    // Re-approach: specific daily buckets
+    // Create a map of Date -> Daily Change
+    const dailyChange: Record<string, number> = {};
+    for (const trade of sortedTrades) {
+        const dateStr = new Date(trade.time).toISOString().split('T')[0];
+        dailyChange[dateStr] = (dailyChange[dateStr] || 0) + parseFloat(trade.closedPnl);
+    }
+
+    // Now build cumulative history
+    let cumPnL = 0;
+    // We want a continuous line? Or just data points?
+    // AreaChart looks best with continuous days.
+    // Fill gaps?
+    // Let's just output the days we have activity for now, area chart will interpolate or we can fill gaps.
+    // But for a "Portfolio Value" look, we should probably fill gaps.
+
+    // Sort dates
+    const sortedDates = Object.keys(dailyChange).sort();
+    if (sortedDates.length > 0) {
+        const first = new Date(sortedDates[0]);
+        const last = new Date(sortedDates[sortedDates.length - 1]);
+        const dayMs = 86400000;
+
+        for (let t = first.getTime(); t <= last.getTime(); t += dayMs) {
+            const dateStr = new Date(t).toISOString().split('T')[0];
+            if (dailyChange[dateStr]) {
+                cumPnL += dailyChange[dateStr];
+            }
+            pnlHistory.push({ date: dateStr, value: cumPnL });
+        }
+    }
+
     return {
         totalTrades: trades.length,
         totalPnL,
@@ -194,9 +294,13 @@ export function analyzeTrades(trades: Trade[]): AnalyticsResult {
         worstHour,
         bestMonth,
         worstMonth,
-        averageTradeDuration: 0, // Not easily calculable from just fills without open/close pairing logic, skipping for now
+        averageTradeDuration: 0,
         tradesPerDay: trades.length / tradingDays,
         lateNightTradePercent: lateNightPercent,
         averagePositionSize: totalVolume / trades.length,
+        totalDeposits,
+        whatIf,
+        pnlHistory,
+        firstDepositDate: firstDepositDetails.date
     };
 }
